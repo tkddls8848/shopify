@@ -1,0 +1,34 @@
+{
+  "defaultMultiplier": 1.8,
+  "fixedFee": 0,
+  "minimumMargin": 2000,
+  "rounding": 100,
+  "supportedCurrencies": ["KRW"],
+  "categoryOverrides": [
+    {
+      "sourcePrefix": ["패션"],
+      "multiplier": 2.0
+    }
+  ],
+  "categoryMappings": [
+    {
+      "sourcePrefix": ["패션"],
+      "tags": ["소싱:패션"]
+    },
+    {
+      "sourcePrefix": ["주방"],
+      "tags": ["소싱:주방"]
+    },
+    {
+      "sourcePrefix": ["문구"],
+      "tags": ["소싱:문구"]
+    }
+  ],
+  "description": {
+    "allowedTags": ["p", "br", "strong", "em", "b", "i", "ul", "ol", "li", "h2", "h3", "table", "thead", "tbody", "tr", "th", "td", "a", "img"],
+    "allowedAttributes": {
+      "a": ["href", "title"],
+      "img": ["src", "alt", "width", "height"]
+    }
+  }
+}

@@ -1,102 +1,388 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://morrow.local/contracts/product.schema.json",
-  "title": "SourcedProduct",
-  "description": "크롤러가 내보내고 리스터가 읽는 상품 레코드. 두 앱의 유일한 결합점이다. 원본 사이트의 값을 그대로 담고, Shopify 형태로의 변환은 리스터가 담당한다.",
-  "type": "object",
-  "required": ["schemaVersion", "source", "title", "variants", "images"],
+  "$defs": {
+    "ProductImage": {
+      "additionalProperties": false,
+      "properties": {
+        "sourceUrl": {
+          "format": "uri",
+          "minLength": 1,
+          "title": "Sourceurl",
+          "type": "string"
+        },
+        "localPath": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "크롤러가 내려받은 경우 저장 경로(리포 기준 상대경로).",
+          "title": "Localpath"
+        },
+        "position": {
+          "minimum": 0,
+          "title": "Position",
+          "type": "integer"
+        },
+        "role": {
+          "default": "gallery",
+          "enum": [
+            "main",
+            "gallery",
+            "detail"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "alt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Alt"
+        }
+      },
+      "required": [
+        "sourceUrl",
+        "position"
+      ],
+      "title": "ProductImage",
+      "type": "object"
+    },
+    "ProductOption": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "values"
+      ],
+      "title": "ProductOption",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "site": {
+          "description": "어댑터 식별자. 예: domeggook",
+          "title": "Site",
+          "type": "string"
+        },
+        "sourceId": {
+          "description": "원본 사이트의 상품 ID. site와 묶어 중복 판정 키가 된다.",
+          "title": "Sourceid",
+          "type": "string"
+        },
+        "url": {
+          "format": "uri",
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        },
+        "scrapedAt": {
+          "format": "date-time",
+          "title": "Scrapedat",
+          "type": "string"
+        },
+        "adapterVersion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Adapterversion"
+        }
+      },
+      "required": [
+        "site",
+        "sourceId",
+        "url",
+        "scrapedAt"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Supply": {
+      "additionalProperties": false,
+      "properties": {
+        "moq": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "최소주문수량.",
+          "title": "Moq"
+        },
+        "shippingFeeText": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "배송비 표기 원문. 파싱하지 않는다.",
+          "title": "Shippingfeetext"
+        },
+        "leadTimeDays": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Leadtimedays"
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "원산지 표기.",
+          "title": "Origin"
+        },
+        "sellerName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sellername"
+        }
+      },
+      "title": "Supply",
+      "type": "object"
+    },
+    "Variant": {
+      "additionalProperties": false,
+      "properties": {
+        "sourceSku": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourcesku"
+        },
+        "optionValues": {
+          "description": "options 순서와 1:1 대응. 옵션이 없으면 빈 배열.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Optionvalues",
+          "type": "array"
+        },
+        "wholesalePrice": {
+          "description": "원본 사이트의 공급가. 판매가 계산은 리스터가 한다.",
+          "minimum": 0,
+          "title": "Wholesaleprice",
+          "type": "number"
+        },
+        "listPrice": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "원본 사이트가 노출하는 소비자가(있으면).",
+          "title": "Listprice"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "stock": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "null은 '알 수 없음'이며 0(품절)과 구분된다.",
+          "title": "Stock"
+        },
+        "barcode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Barcode"
+        }
+      },
+      "required": [
+        "optionValues",
+        "wholesalePrice",
+        "currency"
+      ],
+      "title": "Variant",
+      "type": "object"
+    }
+  },
   "additionalProperties": false,
+  "description": "크롤러가 내보내고 리스터가 읽는 상품 레코드. 두 앱의 유일한 결합점이다. 원본 사이트의 값을 그대로 담고, Shopify 형태로의 변환은 리스터가 담당한다.",
   "properties": {
     "schemaVersion": {
-      "type": "integer",
       "const": 1,
-      "description": "호환되지 않는 변경 시 증가시킨다."
+      "title": "Schemaversion",
+      "type": "integer"
     },
     "source": {
-      "type": "object",
-      "required": ["site", "sourceId", "url", "scrapedAt"],
-      "additionalProperties": false,
-      "properties": {
-        "site": { "type": "string", "description": "어댑터 식별자. 예: domeggook" },
-        "sourceId": { "type": "string", "description": "원본 사이트의 상품 ID. site와 묶어 중복 판정 키가 된다." },
-        "url": { "type": "string", "format": "uri" },
-        "scrapedAt": { "type": "string", "format": "date-time" },
-        "adapterVersion": { "type": "string" }
-      }
+      "$ref": "#/$defs/Source"
     },
-    "title": { "type": "string", "minLength": 1 },
-    "descriptionHtml": { "type": "string", "description": "원본 상세 설명 HTML. 정제는 리스터가 한다." },
-    "brand": { "type": ["string", "null"] },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "descriptionHtml": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "원본 상세 설명 HTML. 정제는 리스터가 한다.",
+      "title": "Descriptionhtml"
+    },
+    "brand": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Brand"
+    },
     "sourceCategory": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "원본 사이트 기준 카테고리 경로. Shopify 카테고리 매핑은 리스터 책임."
+      "description": "원본 사이트 기준 카테고리 경로. Shopify 카테고리 매핑은 리스터 책임.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Sourcecategory",
+      "type": "array"
     },
     "options": {
-      "type": "array",
       "description": "옵션 이름과 값 목록. 단일 상품이면 빈 배열.",
       "items": {
-        "type": "object",
-        "required": ["name", "values"],
-        "additionalProperties": false,
-        "properties": {
-          "name": { "type": "string" },
-          "values": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
-        }
-      }
+        "$ref": "#/$defs/ProductOption"
+      },
+      "title": "Options",
+      "type": "array"
     },
     "variants": {
-      "type": "array",
-      "minItems": 1,
       "items": {
-        "type": "object",
-        "required": ["optionValues", "wholesalePrice", "currency"],
-        "additionalProperties": false,
-        "properties": {
-          "sourceSku": { "type": ["string", "null"] },
-          "optionValues": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "options 순서와 1:1 대응. 옵션이 없으면 빈 배열."
-          },
-          "wholesalePrice": { "type": "number", "minimum": 0, "description": "원본 사이트의 공급가. 판매가 계산은 리스터가 한다." },
-          "listPrice": { "type": ["number", "null"], "minimum": 0, "description": "원본 사이트가 노출하는 소비자가(있으면)." },
-          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
-          "stock": { "type": ["integer", "null"], "minimum": 0, "description": "null은 '알 수 없음'이며 0(품절)과 구분된다." },
-          "barcode": { "type": ["string", "null"] }
-        }
-      }
+        "$ref": "#/$defs/Variant"
+      },
+      "minItems": 1,
+      "title": "Variants",
+      "type": "array"
     },
     "images": {
-      "type": "array",
       "items": {
-        "type": "object",
-        "required": ["sourceUrl", "position"],
-        "additionalProperties": false,
-        "properties": {
-          "sourceUrl": { "type": "string", "format": "uri" },
-          "localPath": { "type": ["string", "null"], "description": "크롤러가 내려받은 경우 저장 경로(리포 기준 상대경로)." },
-          "position": { "type": "integer", "minimum": 0 },
-          "role": { "enum": ["main", "gallery", "detail"], "default": "gallery" },
-          "alt": { "type": ["string", "null"] }
-        }
-      }
+        "$ref": "#/$defs/ProductImage"
+      },
+      "title": "Images",
+      "type": "array"
     },
     "supply": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "moq": { "type": ["integer", "null"], "minimum": 1, "description": "최소주문수량." },
-        "shippingFeeText": { "type": ["string", "null"], "description": "배송비 표기 원문. 파싱하지 않는다." },
-        "leadTimeDays": { "type": ["integer", "null"], "minimum": 0 },
-        "origin": { "type": ["string", "null"], "description": "원산지 표기." },
-        "sellerName": { "type": ["string", "null"] }
-      }
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Supply"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "warnings": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "부분 추출 실패 등 리스터가 알아야 할 신호. 예: 'stock:unavailable'"
+      "description": "부분 추출 실패 등 리스터가 알아야 할 신호.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
     }
-  }
+  },
+  "required": [
+    "schemaVersion",
+    "source",
+    "title",
+    "variants",
+    "images"
+  ],
+  "title": "SourcedProduct",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://morrow.local/contracts/product.schema.json"
 }

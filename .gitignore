@@ -16,3 +16,6 @@ apps/crawler/out/
 apps/crawler/.cache/
 .venv/
 __pycache__/
+
+# lister local reports
+apps/lister/runs/

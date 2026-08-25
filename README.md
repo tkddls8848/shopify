@@ -5,8 +5,8 @@ Shopify 스토어 운영을 위한 앱 모음.
 | 경로 | 내용 | 상태 |
 |---|---|---|
 | `apps/dashboard` | 스토어 관리 대시보드 (React + Vite) | 목데이터 UI |
-| `apps/crawler` | 국내 도매/사입 사이트 상품 수집 (Python) | 계획 |
-| `apps/lister` | 수집 상품 Shopify 등록 (Node/TS) | 계획 |
+| `apps/crawler` | 국내 도매/사입 사이트 상품 수집 (Python) | core + demo 어댑터 구현, 실사이트 연동 대기 |
+| `apps/lister` | 수집 상품 Shopify 등록 (Node/TS) | 구현, 개발 스토어 검증 대기 |
 | `shopify-theme` | Shopify 테마 | 별개 배포 산출물 |
 | `contracts` | 크롤러↔리스터 공유 상품 스키마 | 확정 |
 
