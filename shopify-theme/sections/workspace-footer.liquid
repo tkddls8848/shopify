@@ -1,0 +1,42 @@
+{% liquid
+  assign footer_menu = section.settings.menu
+  if footer_menu == blank
+    assign footer_menu = linklists['footer']
+  endif
+%}
+<section class="ws-footer">
+  <div class="ws-footer__main ws-container">
+    <div class="ws-footer__brand">
+      <a class="ws-logo ws-logo--footer" href="{{ routes.root_url }}">
+        <span class="ws-logo__mark"><i></i><i></i></span><strong>{{ shop.name }}</strong>
+      </a>
+      <p>{{ section.settings.description }}</p>
+      <span>{{ section.settings.support }}</span>
+    </div>
+    <div class="ws-footer__nav">
+      <h3>{{ section.settings.menu_heading }}</h3>
+      {% for link in footer_menu.links %}<a href="{{ link.url }}">{{ link.title }}</a>{% else %}<a href="{{ routes.all_products_collection_url }}">전체 상품</a><a href="{{ routes.search_url }}">검색</a><a href="{{ routes.account_url }}">내 계정</a>{% endfor %}
+    </div>
+    <div class="ws-footer__nav">
+      <h3>고객 지원</h3>
+      {% for policy in shop.policies %}{% if policy != blank %}<a href="{{ policy.url }}">{{ policy.title }}</a>{% endif %}{% endfor %}
+      <a href="{{ routes.cart_url }}">장바구니</a>
+    </div>
+    <div class="ws-footer__contact"><h3>{{ section.settings.contact_heading }}</h3><p>{{ section.settings.contact_text }}</p>{% if section.settings.email != blank %}<a href="mailto:{{ section.settings.email }}">{{ section.settings.email }}</a>{% endif %}</div>
+  </div>
+  <div class="ws-footer__bottom ws-container"><span>© {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</span><span>SECURE CHECKOUT · SHOPIFY</span></div>
+</section>
+{% schema %}
+{
+  "name": "Workspace 푸터",
+  "settings": [
+    { "type": "textarea", "id": "description", "label": "브랜드 설명", "default": "좋은 제품이 더 나은 일상을 만든다고 믿습니다. 오래 사용할 수 있는 제품을 신중하게 제안합니다." },
+    { "type": "text", "id": "support", "label": "운영 안내", "default": "평일 10:00 — 17:00" },
+    { "type": "text", "id": "menu_heading", "label": "메뉴 제목", "default": "쇼핑하기" },
+    { "type": "link_list", "id": "menu", "label": "푸터 메뉴" },
+    { "type": "text", "id": "contact_heading", "label": "문의 제목", "default": "도움이 필요하신가요?" },
+    { "type": "textarea", "id": "contact_text", "label": "문의 설명", "default": "상품과 주문에 관해 궁금한 점을 남겨주세요. 빠르게 도와드리겠습니다." },
+    { "type": "text", "id": "email", "label": "이메일" }
+  ]
+}
+{% endschema %}

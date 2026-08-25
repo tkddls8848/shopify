@@ -1,0 +1,209 @@
+{% liquid
+  assign featured_collection = section.settings.featured_collection
+  if featured_collection == blank
+    assign featured_collection = collections['all']
+  endif
+  assign hero_product = section.settings.hero_product
+  if hero_product == blank and featured_collection != blank
+    assign hero_product = featured_collection.products.first
+  endif
+  assign hero_media = section.settings.hero_image
+  if hero_media == blank and hero_product != blank
+    assign hero_media = hero_product.featured_image
+  endif
+%}
+
+<div class="ws-home" data-section-id="{{ section.id }}">
+  <section class="ws-hero ws-container">
+    <div class="ws-hero__content">
+      <div class="ws-hero__copy">
+        {% if section.settings.eyebrow != blank %}<p class="ws-eyebrow"><span></span>{{ section.settings.eyebrow }}</p>{% endif %}
+        <h1>{{ section.settings.heading }}</h1>
+        <div class="ws-hero__text">{{ section.settings.body }}</div>
+        <a class="ws-primary-button" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">
+          {{ section.settings.button_label }} <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+
+      {% if hero_product != blank %}
+        <a class="ws-hero-product" href="{{ hero_product.url }}">
+          <span class="ws-hero-product__thumb">
+            {% if hero_product.featured_image != blank %}
+              {{ hero_product.featured_image | image_url: width: 180 | image_tag: loading: 'eager', widths: '90,180', alt: hero_product.title }}
+            {% else %}
+              {{ 'product-1' | placeholder_svg_tag }}
+            {% endif %}
+          </span>
+          <span class="ws-hero-product__meta"><small>{{ hero_product.vendor | default: shop.name }}</small><strong>{{ hero_product.title }}</strong></span>
+          <strong class="ws-hero-product__price">{{ hero_product.price | money }}</strong>
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="ws-hero__media">
+      {% if hero_media != blank %}
+        {{ hero_media | image_url: width: 1800 | image_tag: loading: 'eager', widths: '640,960,1280,1800', sizes: '(min-width: 990px) 52vw, 100vw', alt: section.settings.heading }}
+      {% else %}
+        <div class="ws-hero__placeholder">
+          <div class="ws-placeholder-desk"><span></span><i></i><b></b></div>
+          <p>NEW WORK / NEW STANDARD</p>
+        </div>
+      {% endif %}
+      <div class="ws-hero__media-tag"><span>{{ section.settings.media_tag }}</span><b>0{{ section.index | default: 1 }}</b></div>
+    </div>
+  </section>
+
+  <section class="ws-benefits ws-container" aria-label="쇼핑 혜택">
+    {% for block in section.blocks %}
+      {% if block.type == 'benefit' %}
+        <div class="ws-benefit" {{ block.shopify_attributes }}>
+          <span class="ws-benefit__icon">
+            {% case block.settings.icon %}
+              {% when 'truck' %}<svg viewBox="0 0 28 28"><path d="M3 6h14v14H3zM17 11h4l4 5v4h-8z"></path><circle cx="8" cy="22" r="2"></circle><circle cx="21" cy="22" r="2"></circle></svg>
+              {% when 'return' %}<svg viewBox="0 0 28 28"><path d="M7 9H3l3-4"></path><path d="M4 9a11 11 0 1 1-1 8"></path><path d="m10 14 3 3 6-7"></path></svg>
+              {% when 'support' %}<svg viewBox="0 0 28 28"><path d="M5 16v-4a9 9 0 0 1 18 0v4"></path><path d="M5 14H3v6h5v-6zM23 14h2v6h-5v-6zM20 22c-1 2-3 2-5 2"></path></svg>
+              {% else %}<svg viewBox="0 0 28 28"><path d="M14 3 4 7v7c0 6 4 9 10 11 6-2 10-5 10-11V7z"></path><path d="m9 14 3 3 7-8"></path></svg>
+            {% endcase %}
+          </span>
+          <span><strong>{{ block.settings.heading }}</strong><small>{{ block.settings.text }}</small></span>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </section>
+
+  <section class="ws-categories ws-container">
+    <div class="ws-section-heading">
+      <div><p>{{ section.settings.categories_eyebrow }}</p><h2>{{ section.settings.categories_heading }}</h2></div>
+      <a href="{{ routes.collections_url }}">모든 카테고리 <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="ws-category-grid">
+      {% assign collection_blocks = section.blocks | where: 'type', 'collection' %}
+      {% for block in collection_blocks limit: 5 %}
+        {% assign card_collection = block.settings.collection %}
+        <a class="ws-category-card" href="{{ card_collection.url | default: routes.all_products_collection_url }}" {{ block.shopify_attributes }}>
+          <div class="ws-category-card__image">
+            {% if block.settings.image != blank %}
+              {{ block.settings.image | image_url: width: 720 | image_tag: loading: 'lazy', widths: '240,480,720', alt: block.settings.title }}
+            {% elsif card_collection.featured_image != blank %}
+              {{ card_collection.featured_image | image_url: width: 720 | image_tag: loading: 'lazy', widths: '240,480,720', alt: card_collection.title }}
+            {% elsif card_collection.products.first.featured_image != blank %}
+              {{ card_collection.products.first.featured_image | image_url: width: 720 | image_tag: loading: 'lazy', widths: '240,480,720', alt: card_collection.title }}
+            {% else %}
+              {{ 'collection-' | append: forloop.index | placeholder_svg_tag }}
+            {% endif %}
+          </div>
+          <div><strong>{{ block.settings.title | default: card_collection.title | default: '추천 컬렉션' }}</strong><span>{{ card_collection.products_count | default: 0 }} items</span></div>
+          <b aria-hidden="true">↗</b>
+        </a>
+      {% else %}
+        {% for collection in collections limit: 5 %}
+          <a class="ws-category-card" href="{{ collection.url }}"><div class="ws-category-card__image">{% if collection.featured_image %}{{ collection.featured_image | image_url: width: 720 | image_tag: loading: 'lazy', alt: collection.title }}{% else %}{{ 'collection-' | append: forloop.index | placeholder_svg_tag }}{% endif %}</div><div><strong>{{ collection.title }}</strong><span>{{ collection.products_count }} items</span></div><b>↗</b></a>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="ws-products ws-container">
+    <div class="ws-product-grid">
+      <div class="ws-product-intro">
+        <p>{{ section.settings.products_eyebrow }}</p>
+        <h2>{{ section.settings.products_heading }}</h2>
+        <div>{{ section.settings.products_body }}</div>
+        <a href="{{ featured_collection.url | default: routes.all_products_collection_url }}">전체 상품 보기 <span>→</span></a>
+      </div>
+      {% for product in featured_collection.products limit: section.settings.products_limit %}
+        <article class="ws-product-card">
+          <a class="ws-product-card__image" href="{{ product.url }}">
+            {% if product.compare_at_price > product.price %}<span class="ws-badge ws-badge--sale">SALE</span>{% elsif product.available == false %}<span class="ws-badge ws-badge--sold">SOLD OUT</span>{% endif %}
+            {% if product.featured_image != blank %}
+              {{ product.featured_image | image_url: width: 900 | image_tag: loading: 'lazy', widths: '260,520,900', sizes: '(min-width: 990px) 20vw, 50vw', alt: product.title }}
+            {% else %}
+              {{ 'product-' | append: forloop.index | placeholder_svg_tag }}
+            {% endif %}
+          </a>
+          <div class="ws-product-card__body">
+            <p>{{ product.vendor | default: shop.name }}</p>
+            <a href="{{ product.url }}"><h3>{{ product.title }}</h3></a>
+            <div class="ws-product-card__bottom">
+              <span class="ws-price">{{ product.price | money }}{% if product.compare_at_price > product.price %}<s>{{ product.compare_at_price | money }}</s>{% endif %}</span>
+              {% if product.available %}
+                {% form 'product', product, class: 'ws-quick-add' %}
+                  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+                  <button type="submit" aria-label="{{ product.title }} 장바구니에 담기">+</button>
+                {% endform %}
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% else %}
+        {% for i in (1..8) %}
+          <article class="ws-product-card ws-product-card--placeholder"><div class="ws-product-card__image">{{ 'product-' | append: i | placeholder_svg_tag }}</div><div class="ws-product-card__body"><p>{{ shop.name }}</p><h3>새로운 상품을 준비하고 있습니다</h3><div class="ws-product-card__bottom"><span class="ws-price">COMING SOON</span></div></div></article>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="ws-story ws-container">
+    <div class="ws-story__visual">
+      {% if section.settings.story_image != blank %}
+        {{ section.settings.story_image | image_url: width: 1400 | image_tag: loading: 'lazy', widths: '600,900,1400', alt: section.settings.story_heading }}
+      {% else %}
+        <div class="ws-story__placeholder"><span>WORK</span><span>BETTER</span><i>®</i></div>
+      {% endif %}
+    </div>
+    <div class="ws-story__content"><p>{{ section.settings.story_eyebrow }}</p><h2>{{ section.settings.story_heading }}</h2><div>{{ section.settings.story_body }}</div><a class="ws-secondary-button" href="{{ section.settings.story_link | default: routes.all_products_collection_url }}">{{ section.settings.story_button }} <span>↗</span></a></div>
+  </section>
+
+  <section class="ws-newsletter ws-container">
+    <div><p>MEMBERS ONLY</p><h2>{{ section.settings.newsletter_heading }}</h2></div>
+    {% form 'customer', class: 'ws-newsletter__form' %}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <label class="visually-hidden" for="ws-email-{{ section.id }}">이메일</label>
+      <input id="ws-email-{{ section.id }}" type="email" name="contact[email]" placeholder="이메일 주소" required>
+      <button type="submit">구독하기 <span>→</span></button>
+    {% endform %}
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "Workspace 홈",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "히어로 소제목", "default": "READY TO SHIP · 엄선된 셀렉션" },
+    { "type": "inline_richtext", "id": "heading", "label": "히어로 제목", "default": "일과 일상을 바꾸는 스마트 셀렉션" },
+    { "type": "richtext", "id": "body", "label": "히어로 설명", "default": "<p>좋은 도구는 더 나은 하루를 만듭니다. 기능과 디자인을 모두 갖춘 제품을 한곳에서 만나보세요.</p>" },
+    { "type": "text", "id": "button_label", "label": "히어로 버튼", "default": "컬렉션 둘러보기" },
+    { "type": "url", "id": "button_link", "label": "히어로 버튼 링크" },
+    { "type": "image_picker", "id": "hero_image", "label": "히어로 이미지" },
+    { "type": "product", "id": "hero_product", "label": "히어로 추천 상품" },
+    { "type": "text", "id": "media_tag", "label": "이미지 태그", "default": "CURATED FOR BETTER DAYS" },
+    { "type": "text", "id": "categories_eyebrow", "label": "카테고리 소제목", "default": "SHOP BY CATEGORY" },
+    { "type": "text", "id": "categories_heading", "label": "카테고리 제목", "default": "필요한 제품을 빠르게 찾으세요" },
+    { "type": "collection", "id": "featured_collection", "label": "진열 컬렉션" },
+    { "type": "text", "id": "products_eyebrow", "label": "상품 소제목", "default": "FEATURED ITEMS" },
+    { "type": "text", "id": "products_heading", "label": "상품 제목", "default": "이번 주 가장 주목받는 제품" },
+    { "type": "richtext", "id": "products_body", "label": "상품 설명", "default": "<p>고객들이 먼저 선택한 베스트 아이템을 확인해 보세요. 균형 잡힌 품질과 합리적인 선택을 제안합니다.</p>" },
+    { "type": "range", "id": "products_limit", "min": 4, "max": 12, "step": 1, "default": 8, "label": "상품 수" },
+    { "type": "text", "id": "story_eyebrow", "label": "스토리 소제목", "default": "DESIGNED FOR REAL LIFE" },
+    { "type": "text", "id": "story_heading", "label": "스토리 제목", "default": "오래 쓰고 싶은 것들의 기준" },
+    { "type": "richtext", "id": "story_body", "label": "스토리 설명", "default": "<p>매일 사용하는 제품일수록 더 신중하게. 실용적인 디테일과 오래가는 디자인을 기준으로 큐레이션합니다.</p>" },
+    { "type": "text", "id": "story_button", "label": "스토리 버튼", "default": "브랜드 이야기" },
+    { "type": "url", "id": "story_link", "label": "스토리 링크" },
+    { "type": "image_picker", "id": "story_image", "label": "스토리 이미지" },
+    { "type": "text", "id": "newsletter_heading", "label": "뉴스레터 제목", "default": "새로운 제품과 특별한 혜택을 가장 먼저 받아보세요." }
+  ],
+  "blocks": [
+    { "type": "benefit", "name": "혜택", "limit": 4, "settings": [
+      { "type": "select", "id": "icon", "label": "아이콘", "options": [{"value":"truck","label":"배송"},{"value":"return","label":"반품"},{"value":"support","label":"상담"},{"value":"shield","label":"안심"}], "default": "truck" },
+      { "type": "text", "id": "heading", "label": "제목", "default": "빠르고 안전한 배송" },
+      { "type": "text", "id": "text", "label": "설명", "default": "안전하게 포장해 보내드려요" }
+    ]},
+    { "type": "collection", "name": "카테고리", "limit": 5, "settings": [
+      { "type": "collection", "id": "collection", "label": "컬렉션" },
+      { "type": "text", "id": "title", "label": "표시 제목" },
+      { "type": "image_picker", "id": "image", "label": "대체 이미지" }
+    ]}
+  ],
+  "presets": [{ "name": "Workspace 홈", "blocks": [{"type":"benefit"},{"type":"benefit"},{"type":"benefit"},{"type":"benefit"},{"type":"collection"},{"type":"collection"},{"type":"collection"},{"type":"collection"},{"type":"collection"}] }]
+}
+{% endschema %}

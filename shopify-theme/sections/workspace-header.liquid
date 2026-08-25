@@ -1,0 +1,83 @@
+{% liquid
+  assign header_menu = section.settings.menu
+  if header_menu == blank
+    assign header_menu = linklists['main-menu']
+  endif
+%}
+
+<section class="ws-header" data-section-id="{{ section.id }}">
+  {% if section.settings.announcement != blank %}
+    <a class="ws-announcement" href="{{ section.settings.announcement_link | default: routes.all_products_collection_url }}">
+      <span>{{ section.settings.announcement }}</span>
+      <span class="ws-announcement__action">{{ section.settings.announcement_action }} <span aria-hidden="true">→</span></span>
+    </a>
+  {% endif %}
+
+  <div class="ws-header__main">
+    <div class="ws-header__inner">
+      <a class="ws-logo" href="{{ routes.root_url }}" aria-label="{{ shop.name }} 홈">
+        {% if settings.logo != blank %}
+          {{ settings.logo | image_url: width: 360 | image_tag: loading: 'eager', widths: '120,180,240,360', alt: shop.name }}
+        {% else %}
+          <span class="ws-logo__mark" aria-hidden="true"><i></i><i></i></span>
+          <strong>{{ shop.name }}</strong>
+        {% endif %}
+      </a>
+
+      <a class="ws-shop-button" href="{{ routes.all_products_collection_url }}">
+        <span aria-hidden="true">☰</span><strong>{{ section.settings.shop_label }}</strong>
+      </a>
+
+      <form class="ws-search" action="{{ routes.search_url }}" method="get" role="search">
+        <input type="hidden" name="type" value="product">
+        <label class="visually-hidden" for="ws-search-{{ section.id }}">상품 검색</label>
+        <input id="ws-search-{{ section.id }}" name="q" type="search" placeholder="{{ section.settings.search_placeholder }}" autocomplete="off">
+        <button type="submit" aria-label="검색">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+        </button>
+      </form>
+
+      <nav class="ws-header__links" aria-label="보조 메뉴">
+        {% if section.settings.catalog_label != blank %}<a href="{{ routes.all_products_collection_url }}">{{ section.settings.catalog_label }}</a>{% endif %}
+        {% if section.settings.blog_label != blank and blogs.news != blank %}<a href="{{ blogs.news.url }}">{{ section.settings.blog_label }}</a>{% endif %}
+        <a href="{{ routes.account_url }}" class="ws-icon-link" aria-label="계정">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6"></path></svg>
+        </a>
+        <a href="{{ routes.cart_url }}" class="ws-icon-link ws-cart-link" aria-label="장바구니, 상품 {{ cart.item_count }}개">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2h9.9l2-7.2H7"></path><circle cx="9" cy="19" r="1"></circle><circle cx="17" cy="19" r="1"></circle></svg>
+          {% if cart.item_count > 0 %}<span>{{ cart.item_count }}</span>{% endif %}
+        </a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="ws-category-bar">
+    <nav class="ws-category-bar__inner" aria-label="주요 카테고리">
+      {% for link in header_menu.links limit: 8 %}
+        <a href="{{ link.url }}">{{ link.title }}{% if link.links != blank %}<span aria-hidden="true">⌄</span>{% endif %}</a>
+      {% else %}
+        <a href="{{ routes.all_products_collection_url }}">전체 상품</a>
+        <a href="{{ routes.collections_url }}">컬렉션</a>
+        <a href="{{ routes.search_url }}">상품 검색</a>
+      {% endfor %}
+      {% if section.settings.support_text != blank %}<span class="ws-category-bar__support">{{ section.settings.support_text }}</span>{% endif %}
+    </nav>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Workspace 헤더",
+  "settings": [
+    { "type": "text", "id": "announcement", "label": "상단 안내", "default": "신규 회원 첫 구매 혜택 · 지금 바로 만나보세요" },
+    { "type": "text", "id": "announcement_action", "label": "안내 링크 문구", "default": "혜택 보기" },
+    { "type": "url", "id": "announcement_link", "label": "안내 링크" },
+    { "type": "text", "id": "shop_label", "label": "쇼핑 버튼", "default": "카테고리" },
+    { "type": "text", "id": "search_placeholder", "label": "검색창 문구", "default": "어떤 상품을 찾고 계신가요?" },
+    { "type": "text", "id": "catalog_label", "label": "카탈로그 문구", "default": "전체 상품" },
+    { "type": "text", "id": "blog_label", "label": "블로그 문구", "default": "저널" },
+    { "type": "link_list", "id": "menu", "label": "카테고리 메뉴" },
+    { "type": "text", "id": "support_text", "label": "우측 안내", "default": "평일 오후 2시 이전 주문 당일 출고" }
+  ]
+}
+{% endschema %}

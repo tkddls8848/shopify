@@ -1,0 +1,19 @@
+{
+  "type": "footer",
+  "name": "푸터 그룹",
+  "sections": {
+    "workspace_footer": {
+      "type": "workspace-footer",
+      "settings": {
+        "description": "좋은 제품이 더 나은 일상을 만든다고 믿습니다. 오래 사용할 수 있는 제품을 신중하게 제안합니다.",
+        "support": "평일 10:00 — 17:00",
+        "menu_heading": "쇼핑하기",
+        "menu": "footer",
+        "contact_heading": "도움이 필요하신가요?",
+        "contact_text": "상품과 주문에 관해 궁금한 점을 남겨주세요. 빠르게 도와드리겠습니다.",
+        "email": ""
+      }
+    }
+  },
+  "order": ["workspace_footer"]
+}

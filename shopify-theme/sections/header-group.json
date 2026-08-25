@@ -1,0 +1,21 @@
+{
+  "type": "header",
+  "name": "헤더 그룹",
+  "sections": {
+    "workspace_header": {
+      "type": "workspace-header",
+      "settings": {
+        "announcement": "신규 회원 첫 구매 혜택 · 지금 바로 만나보세요",
+        "announcement_action": "혜택 보기",
+        "announcement_link": "shopify://collections/all",
+        "shop_label": "카테고리",
+        "search_placeholder": "어떤 상품을 찾고 계신가요?",
+        "catalog_label": "전체 상품",
+        "blog_label": "저널",
+        "menu": "main-menu",
+        "support_text": "평일 오후 2시 이전 주문 당일 출고"
+      }
+    }
+  },
+  "order": ["workspace_header"]
+}
