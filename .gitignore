@@ -4,3 +4,15 @@ dist/
 *.local
 .DS_Store
 npm-debug.log*
+
+# secrets / local state
+.env
+.env.*
+!.env.example
+
+# crawler local state
+apps/crawler/.sessions/
+apps/crawler/out/
+apps/crawler/.cache/
+.venv/
+__pycache__/

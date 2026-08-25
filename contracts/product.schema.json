@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://morrow.local/contracts/product.schema.json",
+  "title": "SourcedProduct",
+  "description": "크롤러가 내보내고 리스터가 읽는 상품 레코드. 두 앱의 유일한 결합점이다. 원본 사이트의 값을 그대로 담고, Shopify 형태로의 변환은 리스터가 담당한다.",
+  "type": "object",
+  "required": ["schemaVersion", "source", "title", "variants", "images"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "호환되지 않는 변경 시 증가시킨다."
+    },
+    "source": {
+      "type": "object",
+      "required": ["site", "sourceId", "url", "scrapedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "site": { "type": "string", "description": "어댑터 식별자. 예: domeggook" },
+        "sourceId": { "type": "string", "description": "원본 사이트의 상품 ID. site와 묶어 중복 판정 키가 된다." },
+        "url": { "type": "string", "format": "uri" },
+        "scrapedAt": { "type": "string", "format": "date-time" },
+        "adapterVersion": { "type": "string" }
+      }
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "descriptionHtml": { "type": "string", "description": "원본 상세 설명 HTML. 정제는 리스터가 한다." },
+    "brand": { "type": ["string", "null"] },
+    "sourceCategory": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "원본 사이트 기준 카테고리 경로. Shopify 카테고리 매핑은 리스터 책임."
+    },
+    "options": {
+      "type": "array",
+      "description": "옵션 이름과 값 목록. 단일 상품이면 빈 배열.",
+      "items": {
+        "type": "object",
+        "required": ["name", "values"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "values": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["optionValues", "wholesalePrice", "currency"],
+        "additionalProperties": false,
+        "properties": {
+          "sourceSku": { "type": ["string", "null"] },
+          "optionValues": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "options 순서와 1:1 대응. 옵션이 없으면 빈 배열."
+          },
+          "wholesalePrice": { "type": "number", "minimum": 0, "description": "원본 사이트의 공급가. 판매가 계산은 리스터가 한다." },
+          "listPrice": { "type": ["number", "null"], "minimum": 0, "description": "원본 사이트가 노출하는 소비자가(있으면)." },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "stock": { "type": ["integer", "null"], "minimum": 0, "description": "null은 '알 수 없음'이며 0(품절)과 구분된다." },
+          "barcode": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sourceUrl", "position"],
+        "additionalProperties": false,
+        "properties": {
+          "sourceUrl": { "type": "string", "format": "uri" },
+          "localPath": { "type": ["string", "null"], "description": "크롤러가 내려받은 경우 저장 경로(리포 기준 상대경로)." },
+          "position": { "type": "integer", "minimum": 0 },
+          "role": { "enum": ["main", "gallery", "detail"], "default": "gallery" },
+          "alt": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "supply": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "moq": { "type": ["integer", "null"], "minimum": 1, "description": "최소주문수량." },
+        "shippingFeeText": { "type": ["string", "null"], "description": "배송비 표기 원문. 파싱하지 않는다." },
+        "leadTimeDays": { "type": ["integer", "null"], "minimum": 0 },
+        "origin": { "type": ["string", "null"], "description": "원산지 표기." },
+        "sellerName": { "type": ["string", "null"] }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "부분 추출 실패 등 리스터가 알아야 할 신호. 예: 'stock:unavailable'"
+    }
+  }
+}
